@@ -1,199 +1,109 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TAO Children Monitor</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --tg-bg-color: #1b1f23;
-            --tg-text-color: #ffffff;
-            --tg-secondary-color: #6c757d;
-            --tg-accent-color: #08fdd8;
-            --tg-input-bg: #2a2e35;
-        }
+<script>
+    let tg = window.Telegram.WebApp;
+    let hotkeyInput = document.getElementById("hotkey");
+    let debugConsole = document.getElementById("debug-console");
+    let debugButton = document.getElementById("debug-button");
 
-        body {
-            font-family: 'Arial', sans-serif;
-            text-align: center;
-            padding: 20px;
-            background-color: var(--tg-bg-color);
-            color: var(--tg-text-color);
-            transition: all 0.3s ease-in-out;
-        }
-
-        h2 {
-            font-size: 24px;
-            color: var(--tg-accent-color);
-            margin-bottom: 20px;
-        }
-
-        label {
-            font-size: 16px;
-            color: var(--tg-secondary-color);
-        }
-
-        input {
-            width: 80%;
-            padding: 12px;
-            margin: 10px 0;
-            font-size: 16px;
-            border: 2px solid var(--tg-accent-color);
-            border-radius: 5px;
-            background-color: var(--tg-input-bg);
-            color: var(--tg-text-color);
-            text-align: center;
-            transition: all 0.3s ease-in-out;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--tg-text-color);
-        }
-
-        /* Debug console styles */
-        #debug-console {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 200px;
-            background: rgba(0, 0, 0, 0.85);
-            color: limegreen;
-            font-family: monospace;
-            font-size: 12px;
-            overflow-y: auto;
-            padding: 10px;
-            display: none;
-            z-index: 1000;
-            border-top: 2px solid var(--tg-accent-color);
-        }
-
-        #debug-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--tg-accent-color);
-            color: black;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            z-index: 1001;
-            font-size: 14px;
-        }
-
-    </style>
-</head>
-<body>
-    <h2>TAO Children Monitor</h2>
-    <label for="hotkey">Hotkey to Monitor:</label>
-    <input type="text" id="hotkey" placeholder="Enter hotkey">
-
-    <!-- Debug Console UI -->
-    <div id="debug-console"></div>
-    <button id="debug-button">🛠 Debug</button>
-
-    <script>
-        let tg = window.Telegram.WebApp;
-        let hotkeyInput = document.getElementById("hotkey");
-        let debugConsole = document.getElementById("debug-console");
-        let debugButton = document.getElementById("debug-button");
-
-        // Override console.log to show logs inside debug console
-        (function () {
-            let originalLog = console.log;
-            console.log = function (...args) {
-                originalLog.apply(console, args);
-                debugConsole.innerHTML += args.map(arg => JSON.stringify(arg)).join(" ") + "<br>";
-                debugConsole.scrollTop = debugConsole.scrollHeight;
-            };
-        })();
-
-        // Debug button toggle
-        debugButton.addEventListener("click", function () {
-            debugConsole.style.display = debugConsole.style.display === "block" ? "none" : "block";
-        });
-
-        function applyTelegramTheme() {
-            if (tg && tg.themeParams) {
-                document.documentElement.style.setProperty('--tg-bg-color', tg.themeParams.bg_color || "#1b1f23");
-                document.documentElement.style.setProperty('--tg-text-color', tg.themeParams.text_color || "#ffffff");
-                document.documentElement.style.setProperty('--tg-secondary-color', tg.themeParams.hint_color || "#6c757d");
-                document.documentElement.style.setProperty('--tg-accent-color', tg.themeParams.button_color || "#08fdd8");
-                document.documentElement.style.setProperty('--tg-input-bg', tg.themeParams.secondary_bg_color || "#2a2e35");
-            }
-        }
-
-        function getQueryParam(name) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(name);
-        }
-
-        function decodeBase64(str) {
-            try {
-                return atob(str);
-            } catch (e) {
-                console.log("Error decoding Base64:", e);
-                return null;
-            }
-        }
-
-        function encodeBase64(str) {
-            return btoa(str);
-        }
-
-        function loadConfig() {
-            console.log("Loading config...");
-            const configParam = getQueryParam("config");
-            if (configParam) {
-                const decodedConfig = decodeBase64(configParam);
-                if (decodedConfig) {
-                    try {
-                        const config = JSON.parse(decodedConfig);
-                        <hotkeyInp></hotkeyInp>ut.value = config.hotkey_to_monitor || "";
-                        console.log("Loaded config:", config);
-                    } catch (e) {
-                        console.log("Error parsing JSON:", e);
-                    }
-                }
-            }
-        }
-
-        function saveConfig() {
-            try {
-                console.log("Save button clicked");
-                const hotkey = hotkeyInput.value.trim();
-                console.log("New hotkey:", hotkey);
-
-                if (!hotkey) {
-                    console.log("Error: Hotkey cannot be empty!");
-                    return;
-                }
-
-                const updatedConfig = { hotkey_to_monitor: hotkey };
-                const encodedConfig = encodeBase64(JSON.stringify(updatedConfig));
-
-                console.log("Encoded Config:", encodedConfig);
-                tg.sendData(encodedConfig);
-                tg.close();
-
-            } catch (error) {
-                console.log("Error saving config:", error);
-            }
-        }
-
-        // Initialize Telegram WebApp
-        tg.expand();
-        tg.MainButton.setParams({ text: "Save & Exit", is_visible: true });
-        tg.MainButton.onClick(saveConfig);
-
-        // Apply Telegram theme and load config on page load
-        window.onload = function () {
-            applyTelegramTheme();
-            loadConfig();
+    // Override console.log to show logs inside debug console
+    (function () {
+        let originalLog = console.log;
+        console.log = function (...args) {
+            originalLog.apply(console, args);
+            debugConsole.innerHTML += args.map(arg => JSON.stringify(arg)).join(" ") + "<br>";
+            debugConsole.scrollTop = debugConsole.scrollHeight;
         };
-    </script>
-</body>
-</html>
+    })();
+
+    // Debug button toggle
+    debugButton.addEventListener("click", function () {
+        debugConsole.style.display = debugConsole.style.display === "block" ? "none" : "block";
+    });
+
+    function applyTelegramTheme() {
+        if (tg && tg.themeParams) {
+            document.documentElement.style.setProperty('--tg-bg-color', tg.themeParams.bg_color || "#1b1f23");
+            document.documentElement.style.setProperty('--tg-text-color', tg.themeParams.text_color || "#ffffff");
+            document.documentElement.style.setProperty('--tg-secondary-color', tg.themeParams.hint_color || "#6c757d");
+            document.documentElement.style.setProperty('--tg-accent-color', tg.themeParams.button_color || "#08fdd8");
+            document.documentElement.style.setProperty('--tg-input-bg', tg.themeParams.secondary_bg_color || "#2a2e35");
+        }
+    }
+
+    function getQueryParam(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+
+    function decodeBase64(str) {
+        try {
+            return atob(str);
+        } catch (e) {
+            console.log("Error decoding Base64:", e);
+            return null;
+        }
+    }
+
+    function encodeBase64(str) {
+        return btoa(str);
+    }
+
+    function loadConfig() {
+        console.log("Loading config...");
+        const configParam = getQueryParam("config");
+        if (configParam) {
+            const decodedConfig = decodeBase64(configParam);
+            if (decodedConfig) {
+                try {
+                    const config = JSON.parse(decodedConfig);
+                    hotkeyInput.value = config.hotkey_to_monitor || "";
+                    console.log("Loaded config:", config);
+                } catch (e) {
+                    console.log("Error parsing JSON:", e);
+                }
+            }
+        }
+    }
+
+    function saveConfig() {
+        try {
+            console.log("Save button clicked");
+            const hotkey = hotkeyInput.value.trim();
+            console.log("New hotkey:", hotkey);
+
+            if (!hotkey) {
+                console.log("Error: Hotkey cannot be empty!");
+                return;
+            }
+
+            const updatedConfig = { hotkey_to_monitor: hotkey };
+            const encodedConfig = encodeBase64(JSON.stringify(updatedConfig));
+
+            console.log("Encoded Config:", encodedConfig);
+            tg.sendData(encodedConfig);
+            tg.close();
+
+        } catch (error) {
+            console.log("Error saving config:", error);
+        }
+    }
+
+    // Ensure Main Button is always visible
+    function setupMainButton() {
+        console.log("Setting up MainButton...");
+        tg.MainButton.setParams({ text: "Save & Exit", is_visible: true });
+        tg.MainButton.show(); // Force show
+        tg.MainButton.onClick(saveConfig);
+    }
+
+    // Initialize Telegram WebApp
+    tg.expand();
+
+    // Delay setup to ensure Telegram WebApp is fully initialized
+    setTimeout(setupMainButton, 500);
+
+    // Apply Telegram theme and load config on page load
+    window.onload = function () {
+        applyTelegramTheme();
+        loadConfig();
+    };
+</script>
