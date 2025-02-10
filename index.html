@@ -11,6 +11,7 @@
             --tg-text-color: #ffffff;
             --tg-secondary-color: #6c757d;
             --tg-accent-color: #08fdd8; /* TaoStats-inspired neon green */
+            --tg-input-bg: #2a2e35; /* Improved visibility for input field */
         }
 
         body {
@@ -40,7 +41,7 @@
             font-size: 16px;
             border: 2px solid var(--tg-accent-color);
             border-radius: 5px;
-            background-color: transparent;
+            background-color: var(--tg-input-bg);
             color: var(--tg-text-color);
             text-align: center;
             transition: all 0.3s ease-in-out;
@@ -59,6 +60,7 @@
 
     <script>
         let tg = window.Telegram.WebApp;
+        let hotkeyInput = document.getElementById("hotkey");
 
         function applyTelegramTheme() {
             if (tg && tg.themeParams) {
@@ -66,6 +68,7 @@
                 document.documentElement.style.setProperty('--tg-text-color', tg.themeParams.text_color || "#ffffff");
                 document.documentElement.style.setProperty('--tg-secondary-color', tg.themeParams.hint_color || "#6c757d");
                 document.documentElement.style.setProperty('--tg-accent-color', tg.themeParams.button_color || "#08fdd8");
+                document.documentElement.style.setProperty('--tg-input-bg', tg.themeParams.secondary_bg_color || "#2a2e35");
             }
         }
 
@@ -94,7 +97,8 @@
                 if (decodedConfig) {
                     try {
                         const config = JSON.parse(decodedConfig);
-                        document.getElementById("hotkey").value = config.hotkey_to_monitor || "";
+                        hotkeyInput.value = config.hotkey_to_monitor || "";
+                        tg.MainButton.setParams({ text: "Save & Exit", is_visible: false });
                     } catch (e) {
                         console.error("Invalid JSON format:", e);
                     }
@@ -103,7 +107,7 @@
         }
 
         function saveConfig() {
-            const hotkey = document.getElementById("hotkey").value;
+            const hotkey = hotkeyInput.value.trim();
             const updatedConfig = { hotkey_to_monitor: hotkey };
             const encodedConfig = encodeBase64(JSON.stringify(updatedConfig));
 
@@ -113,11 +117,11 @@
 
         // Initialize Telegram WebApp
         tg.expand();  // Expand to full view
-        tg.MainButton.setText("Save & Exit").show();  // Show main button
+        tg.MainButton.setParams({ text: "Save & Exit" }); // Initially hidden
         tg.MainButton.onClick(saveConfig);  // Attach event to button
 
         // Apply Telegram theme and load config on page load
-        window.onload = function() {
+        window.onload = function () {
             applyTelegramTheme();
             loadConfig();
         };
