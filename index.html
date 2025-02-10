@@ -131,17 +131,17 @@
         return urlParams.get(name);
     }
 
+    function encodeBase64(str) {
+        return btoa(unescape(encodeURIComponent(str))); // UTF-8 Safe Encoding
+    }
+
     function decodeBase64(str) {
         try {
-            return atob(str);
+            return decodeURIComponent(escape(atob(str))); // UTF-8 Safe Decoding
         } catch (e) {
             console.log("Error decoding Base64:", e);
             return null;
         }
-    }
-
-    function encodeBase64(str) {
-        return btoa(str);
     }
 
     function loadConfig() {
