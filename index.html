@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Config Editor</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Telegram Config Editor</h2>
+    <label for="hotkey">Hotkey to Monitor:</label>
+    <input type="text" id="hotkey" placeholder="Enter hotkey">
+
+    <script>
+        let tg = window.Telegram.WebApp;
+
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        function decodeBase64(str) {
+            try {
+                return atob(str);
+            } catch (e) {
+                console.error("Invalid base64 data:", e);
+                return null;
+            }
+        }
+
+        function encodeBase64(str) {
+            return btoa(str);
+        }
+
+        function loadConfig() {
+            const configParam = getQueryParam("config");
+            if (configParam) {
+                const decodedConfig = decodeBase64(configParam);
+                if (decodedConfig) {
+                    try {
+                        const config = JSON.parse(decodedConfig);
+                        document.getElementById("hotkey").value = config.hotkey_to_monitor || "";
+                    } catch (e) {
+                        console.error("Invalid JSON format:", e);
+                    }
+                }
+            }
+        }
+
+        function saveConfig() {
+            const hotkey = document.getElementById("hotkey").value;
+            const updatedConfig = { hotkey_to_monitor: hotkey };
+            const encodedConfig = encodeBase64(JSON.stringify(updatedConfig));
+
+            tg.sendData(encodedConfig);
+            tg.close();  // Close Telegram Web App after sending
+        }
+
+        // Initialize Telegram WebApp
+        tg.expand();  // Expand to full view
+        tg.MainButton.setText("Save & Exit").show();  // Show main button
+        tg.MainButton.onClick(saveConfig);  // Attach event to button
+
+        // Load config on page load
+        window.onload = loadConfig;
+    </script>
+</body>
+</html>
