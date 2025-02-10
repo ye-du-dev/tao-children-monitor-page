@@ -58,73 +58,75 @@
     <label for="hotkey">Hotkey to Monitor:</label>
     <input type="text" id="hotkey" placeholder="Enter hotkey">
 
-    <script>
-        let tg = window.Telegram.WebApp;
-        let hotkeyInput = document.getElementById("hotkey");
+<script>
+    let tg = window.Telegram.WebApp;
+    let hotkeyInput = document.getElementById("hotkey");
 
-        function applyTelegramTheme() {
-            if (tg && tg.themeParams) {
-                document.documentElement.style.setProperty('--tg-bg-color', tg.themeParams.bg_color || "#1b1f23");
-                document.documentElement.style.setProperty('--tg-text-color', tg.themeParams.text_color || "#ffffff");
-                document.documentElement.style.setProperty('--tg-secondary-color', tg.themeParams.hint_color || "#6c757d");
-                document.documentElement.style.setProperty('--tg-accent-color', tg.themeParams.button_color || "#08fdd8");
-                document.documentElement.style.setProperty('--tg-input-bg', tg.themeParams.secondary_bg_color || "#2a2e35");
-            }
+    function applyTelegramTheme() {
+        if (tg && tg.themeParams) {
+            document.documentElement.style.setProperty('--tg-bg-color', tg.themeParams.bg_color || "#1b1f23");
+            document.documentElement.style.setProperty('--tg-text-color', tg.themeParams.text_color || "#ffffff");
+            document.documentElement.style.setProperty('--tg-secondary-color', tg.themeParams.hint_color || "#6c757d");
+            document.documentElement.style.setProperty('--tg-accent-color', tg.themeParams.button_color || "#08fdd8");
+            document.documentElement.style.setProperty('--tg-input-bg', tg.themeParams.secondary_bg_color || "#2a2e35");
         }
+    }
 
-        function getQueryParam(name) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(name);
+    function getQueryParam(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+
+    function decodeBase64(str) {
+        try {
+            return atob(str);
+        } catch (e) {
+            console.error("Invalid base64 data:", e);
+            return null;
         }
+    }
 
-        function decodeBase64(str) {
-            try {
-                return atob(str);
-            } catch (e) {
-                console.error("Invalid base64 data:", e);
-                return null;
-            }
-        }
+    function encodeBase64(str) {
+        return btoa(str);
+    }
 
-        function encodeBase64(str) {
-            return btoa(str);
-        }
-
-        function loadConfig() {
-            const configParam = getQueryParam("config");
-            if (configParam) {
-                const decodedConfig = decodeBase64(configParam);
-                if (decodedConfig) {
-                    try {
-                        const config = JSON.parse(decodedConfig);
-                        hotkeyInput.value = config.hotkey_to_monitor || "";
-                        tg.MainButton.setParams({ text: "Save & Exit", is_visible: false });
-                    } catch (e) {
-                        console.error("Invalid JSON format:", e);
-                    }
+    function loadConfig() {
+        const configParam = getQueryParam("config");
+        if (configParam) {
+            const decodedConfig = decodeBase64(configParam);
+            if (decodedConfig) {
+                try {
+                    const config = JSON.parse(decodedConfig);
+                    hotkeyInput.value = config.hotkey_to_monitor || "";
+                } catch (e) {
+                    console.error("Invalid JSON format:", e);
                 }
             }
         }
+    }
 
-        function saveConfig() {
-            const hotkey = hotkeyInput.value.trim();
-            const updatedConfig = { hotkey_to_monitor: hotkey };
-            const encodedConfig = encodeBase64(JSON.stringify(updatedConfig));
+    function saveConfig() {
+        console.log("Save button clicked"); // Debug log
+        const hotkey = hotkeyInput.value.trim();
+        console.log("New hotkey:", hotkey); // Debug log
+        const updatedConfig = { hotkey_to_monitor: hotkey };
+        const encodedConfig = encodeBase64(JSON.stringify(updatedConfig));
 
-            tg.sendData(encodedConfig);
-            tg.close();  // Close Telegram Web App after sending
-        }
+        console.log("Encoded Config:", encodedConfig); // Debug log
+        tg.sendData(encodedConfig);
+        tg.close();
+    }
 
-        // Initialize Telegram WebApp
-        tg.expand();  // Expand to full view
-        tg.MainButton.setParams({ text: "Save & Exit" }); // Initially hidden
-        tg.MainButton.onClick(saveConfig);  // Attach event to button
+    // Initialize Telegram WebApp
+    tg.expand();
+    tg.MainButton.setParams({ text: "Save & Exit", is_visible: true }); // Always visible
+    tg.MainButton.onClick(saveConfig);
 
-        // Apply Telegram theme and load config on page load
-        window.onload = function () {
-            applyTelegramTheme();
-            loadConfig();
-        };
-    </script>
+    // Apply Telegram theme and load config on page load
+    window.onload = function () {
+        applyTelegramTheme();
+        loadConfig();
+    };
+</script>
 </body>
 </html>
