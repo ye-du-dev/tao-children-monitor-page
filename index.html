@@ -3,30 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Config Editor</title>
+    <title>TAO Children Monitor</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        :root {
+            --tg-bg-color: #1b1f23;
+            --tg-text-color: #ffffff;
+            --tg-secondary-color: #6c757d;
+            --tg-accent-color: #08fdd8; /* TaoStats-inspired neon green */
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             text-align: center;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: var(--tg-bg-color);
+            color: var(--tg-text-color);
+            transition: all 0.3s ease-in-out;
         }
+
+        h2 {
+            font-size: 24px;
+            color: var(--tg-accent-color);
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 16px;
+            color: var(--tg-secondary-color);
+        }
+
         input {
             width: 80%;
-            padding: 10px;
+            padding: 12px;
             margin: 10px 0;
             font-size: 16px;
+            border: 2px solid var(--tg-accent-color);
+            border-radius: 5px;
+            background-color: transparent;
+            color: var(--tg-text-color);
+            text-align: center;
+            transition: all 0.3s ease-in-out;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--tg-text-color);
         }
     </style>
 </head>
 <body>
-    <h2>Telegram Config Editor</h2>
+    <h2>TAO Children Monitor</h2>
     <label for="hotkey">Hotkey to Monitor:</label>
     <input type="text" id="hotkey" placeholder="Enter hotkey">
 
     <script>
         let tg = window.Telegram.WebApp;
+
+        function applyTelegramTheme() {
+            if (tg && tg.themeParams) {
+                document.documentElement.style.setProperty('--tg-bg-color', tg.themeParams.bg_color || "#1b1f23");
+                document.documentElement.style.setProperty('--tg-text-color', tg.themeParams.text_color || "#ffffff");
+                document.documentElement.style.setProperty('--tg-secondary-color', tg.themeParams.hint_color || "#6c757d");
+                document.documentElement.style.setProperty('--tg-accent-color', tg.themeParams.button_color || "#08fdd8");
+            }
+        }
 
         function getQueryParam(name) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -75,8 +116,11 @@
         tg.MainButton.setText("Save & Exit").show();  // Show main button
         tg.MainButton.onClick(saveConfig);  // Attach event to button
 
-        // Load config on page load
-        window.onload = loadConfig;
+        // Apply Telegram theme and load config on page load
+        window.onload = function() {
+            applyTelegramTheme();
+            loadConfig();
+        };
     </script>
 </body>
 </html>
