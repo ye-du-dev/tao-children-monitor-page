@@ -98,23 +98,6 @@
 <script>
     let tg = window.Telegram.WebApp;
     let hotkeyInput = document.getElementById("hotkey");
-    let debugConsole = document.getElementById("debug-console");
-    let debugButton = document.getElementById("debug-button");
-
-    // Override console.log to show logs inside debug console
-    (function () {
-        let originalLog = console.log;
-        console.log = function (...args) {
-            originalLog.apply(console, args);
-            debugConsole.innerHTML += args.map(arg => JSON.stringify(arg)).join(" ") + "<br>";
-            debugConsole.scrollTop = debugConsole.scrollHeight;
-        };
-    })();
-
-    // Debug button toggle
-    debugButton.addEventListener("click", function () {
-        debugConsole.style.display = debugConsole.style.display === "block" ? "none" : "block";
-    });
 
     function applyTelegramTheme() {
         if (tg && tg.themeParams) {
@@ -184,7 +167,6 @@
         }
     }
 
-    // Ensure Main Button is always visible
     function setupMainButton() {
         console.log("Setting up MainButton...");
         tg.MainButton.setParams({ text: "Save & Exit", is_visible: true });
